@@ -1,17 +1,18 @@
-beautifulsoup4==4.5.3
-bs4==0.0.1
-PyYAML==5.1.1
-six==1.10.0
-requests==2.18.4
-Pillow
+# Python 3.12 baseline. Legacy 12306 workflow compatibility still requires
+# end-to-end verification; do not assume that upgrading packages updates APIs.
+beautifulsoup4==4.12.3
+PyYAML==6.0.1
+six==1.16.0
+requests==2.32.3
+Pillow==10.3.0
 wrapcache==1.0.8
-ntplib==0.3.3
-sklearn
-opencv-python
-keras>=2.2.4
-tensorflow
-matplotlib>=3.0.2
-numpy>=1.14.6
-scipy>=1.1.0
-selenium==3.11.0
-fake-useragent==0.1.11
+ntplib==0.4.0
+scikit-learn==1.5.0
+opencv-python-headless==4.10.0.84
+keras==3.3.3
+tensorflow==2.16.2
+matplotlib==3.9.0
+numpy==1.26.4
+scipy==1.13.1
+selenium==4.21.0
+fake-useragent==1.5.1
