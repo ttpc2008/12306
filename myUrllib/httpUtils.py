@@ -27,6 +27,19 @@ def _set_user_agent():
     return requests.utils.default_user_agent()
 
 
+def _redact_request_data(data):
+    """Avoid writing credentials and authentication tokens to application logs."""
+    sensitive_markers = ("password", "passwd", "pwd", "token", "secret",
+                         "answer", "cookie", "authorization")
+    if isinstance(data, dict):
+        return {
+            key: ("<redacted>" if any(marker in str(key).lower()
+                                      for marker in sensitive_markers) else value)
+            for key, value in data.items()
+        }
+    return "<redacted>" if data is not None else None
+
+
 class HTTPClient(object):
 
     def __init__(self, is_proxy):
@@ -130,12 +143,12 @@ class HTTPClient(object):
         self.resetHeaders()
         request_params = data if method == "get" else None
         request_data = data if method == "post" else None
-        if TickerConfig.RANDOM_AGENT == 1:
+        if urls.get("Referer"):
             self.setHeadersReferer(urls["Referer"])
         self.setHeadersUserAgent()
         if is_logger:
             logger.log(
-                u"url: {0}\n入参: {1}\n请求方式: {2}\n".format(req_url, data, method, ))
+                u"url: {0}\n入参: {1}\n请求方式: {2}\n".format(req_url, _redact_request_data(data), method, ))
         self.setHeadersHost(urls["Host"])
         if is_test_cdn:
             url_host = self._cdn
@@ -167,7 +180,8 @@ class HTTPClient(object):
                     if response.content:
                         if is_logger:
                             logger.log(
-                                u"出参：{0}".format(response.content.decode()))
+                                u"响应状态：{0}，响应字节数：{1}".format(
+                                    response.status_code, len(response.content)))
                         if urls["is_json"]:
                             return json.loads(response.content.decode() if isinstance(response.content, bytes) else response.content)
                         else:
