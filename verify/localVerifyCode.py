@@ -27,9 +27,9 @@ def base64_to_image(base64_code):
     # base64解码
     img_data = base64.b64decode(base64_code)
     # 转换为np数组
-    img_array = np.fromstring(img_data, np.uint8)
+    img_array = np.frombuffer(img_data, dtype=np.uint8)
     # 转换成opencv可用格式
-    img = cv2.imdecode(img_array, cv2.COLOR_RGB2BGR)
+    img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
 
     return img
 
