@@ -124,12 +124,12 @@ class HTTPClient(object):
         is_cdn = urls.get("is_cdn", False)
         is_test_cdn = urls.get("is_test_cdn", False)
         error_data = {"code": 99999, "message": u"重试次数达到上限"}
-        if data:
-            method = "post"
-            self.setHeaders({"Content-Length": "{0}".format(len(data))})
-        else:
-            method = "get"
-            self.resetHeaders()
+        method = (urls.get("req_type") or ("post" if data is not None else "get")).lower()
+        if method not in ("get", "post"):
+            raise ValueError("Unsupported HTTP method: {}".format(method))
+        self.resetHeaders()
+        request_params = data if method == "get" else None
+        request_data = data if method == "post" else None
         if TickerConfig.RANDOM_AGENT == 1:
             self.setHeadersReferer(urls["Referer"])
         self.setHeadersUserAgent()
@@ -156,7 +156,8 @@ class HTTPClient(object):
                                            timeout=2,
                                            proxies=self._proxies,
                                            url=http + "://" + url_host + req_url,
-                                           data=data,
+                                           data=request_data,
+                                           params=request_params,
                                            allow_redirects=allow_redirects,
                                            verify=True,
                                            **kwargs)
