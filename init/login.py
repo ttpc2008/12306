@@ -49,7 +49,15 @@ class GoLogin:
         if not isinstance(fresult, str):
             print("登录失败")
             return
-        fresult = eval(fresult.split("(")[1].split(")")[0])
+        # Parse JSONP as data; never execute a server response as Python code.
+        start = fresult.find("(")
+        end = fresult.rfind(")")
+        if start < 0 or end <= start:
+            return
+        try:
+            fresult = json.loads(fresult[start + 1:end])
+        except (TypeError, ValueError):
+            return
         if "result_code" in fresult and fresult["result_code"] == "4":
             print(u"验证码通过,开始登录..")
             return True
@@ -69,10 +77,10 @@ class GoLogin:
         logurl = self.session.urls["login"]
 
         loginData = OrderedDict()
-        loginData["username"] = user,
-        loginData["password"] = passwd,
-        loginData["appid"] = "otn",
-        loginData["answer"] = self.randCode,
+        loginData["username"] = user
+        loginData["password"] = passwd
+        loginData["appid"] = "otn"
+        loginData["answer"] = self.randCode
 
         tresult = self.session.httpClint.send(logurl, loginData)
         if 'result_code' in tresult and tresult["result_code"] == 0:
