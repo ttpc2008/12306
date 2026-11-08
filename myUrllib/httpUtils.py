@@ -4,7 +4,6 @@ import socket
 from collections import OrderedDict
 from time import sleep
 import requests
-from fake_useragent import UserAgent
 import TickerConfig
 from agency.agency_tools import proxy
 from config import logger
@@ -23,8 +22,9 @@ def _set_header_default():
 
 
 def _set_user_agent():
-    user_agent = UserAgent(verify_ssl=False).random
-    return user_agent
+    # Use Requests' transparent default UA; avoid a runtime lookup to a third-party
+    # user-agent service during application startup.
+    return requests.utils.default_user_agent()
 
 
 class HTTPClient(object):
@@ -37,7 +37,7 @@ class HTTPClient(object):
         self.initS()
         self._cdn = None
         self._proxies = None
-        if is_proxy is 1:
+        if is_proxy == 1:
             self.proxy = proxy()
             self._proxies = self.proxy.setProxy()
             # print(u"设置当前代理ip为 {}, 请注意代理ip是否可用！！！！！请注意代理ip是否可用！！！！！请注意代理ip是否可用！！！！！".format(self._proxies))
@@ -130,7 +130,7 @@ class HTTPClient(object):
         else:
             method = "get"
             self.resetHeaders()
-        if TickerConfig.RANDOM_AGENT is 1:
+        if TickerConfig.RANDOM_AGENT == 1:
             self.setHeadersReferer(urls["Referer"])
         self.setHeadersUserAgent()
         if is_logger:
@@ -152,17 +152,13 @@ class HTTPClient(object):
             try:
                 # sleep(urls["s_time"]) if "s_time" in urls else sleep(0.001)
                 sleep(s_time)
-                try:
-                    requests.packages.urllib3.disable_warnings()
-                except:
-                    pass
                 response = self._s.request(method=method,
                                            timeout=2,
                                            proxies=self._proxies,
                                            url=http + "://" + url_host + req_url,
                                            data=data,
                                            allow_redirects=allow_redirects,
-                                           verify=False,
+                                           verify=True,
                                            **kwargs)
                 if response.status_code == 200 or response.status_code == 302:
                     if urls.get("not_decode", False):
