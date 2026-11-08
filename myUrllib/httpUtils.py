@@ -30,7 +30,7 @@ def _set_user_agent():
 def _redact_request_data(data):
     """Avoid writing credentials and authentication tokens to application logs."""
     sensitive_markers = ("password", "passwd", "pwd", "token", "secret",
-                         "answer", "cookie", "authorization")
+                         "answer", "cookie", "authorization", "tk")
     if isinstance(data, dict):
         return {
             key: ("<redacted>" if any(marker in str(key).lower()
