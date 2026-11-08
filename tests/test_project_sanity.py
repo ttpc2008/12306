@@ -1,5 +1,6 @@
 """Offline sanity checks; these tests do not contact 12306 or place orders."""
 import unittest
+from urllib.parse import urlsplit
 
 import TickerConfig
 from config.urlConf import urls
@@ -18,7 +19,11 @@ class ProjectSanityTests(unittest.TestCase):
         for name, config in urls.items():
             with self.subTest(endpoint=name):
                 self.assertIn("req_url", config)
-                self.assertTrue(config["req_url"].startswith("/"))
+                endpoint = urlsplit(config["req_url"])
+                self.assertTrue(
+                    config["req_url"].startswith("/")
+                    or (endpoint.scheme in ("http", "https") and endpoint.netloc)
+                )
                 self.assertIn(config.get("req_type", "get"), ("get", "post"))
                 self.assertIsInstance(config.get("re_try", 0), int)
                 self.assertGreaterEqual(config.get("re_try", 0), 0)
