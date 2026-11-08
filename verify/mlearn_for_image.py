@@ -55,7 +55,7 @@ def learn():
         layers.Dropout(0.20),
         layers.Dense(80, activation='softmax')
     ])
-    model.compile(optimizer=optimizers.RMSprop(lr=1e-5),
+    model.compile(optimizer=optimizers.RMSprop(learning_rate=1e-5),
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
     model.summary()
