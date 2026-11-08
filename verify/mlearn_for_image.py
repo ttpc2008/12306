@@ -8,7 +8,6 @@ from keras import layers
 from keras import optimizers
 from keras.applications import VGG16
 from keras.callbacks import ReduceLROnPlateau
-from keras.preprocessing.image import ImageDataGenerator
 
 
 def preprocess_input(x):
@@ -38,9 +37,6 @@ def load_data():
 
 def learn():
     (train_x, train_y, sample_weight), (test_x, test_y) = load_data()
-    datagen = ImageDataGenerator(horizontal_flip=True,
-                                 vertical_flip=True)
-    train_generator = datagen.flow(train_x, train_y, sample_weight=sample_weight)
     base = VGG16(weights='imagenet', include_top=False, input_shape=(None, None, 3))
     for layer in base.layers[:-4]:
         layer.trainable = False
@@ -60,10 +56,13 @@ def learn():
                   metrics=['accuracy'])
     model.summary()
     reduce_lr = ReduceLROnPlateau(verbose=1)
-    model.fit_generator(train_generator, epochs=400,
-                        steps_per_epoch=100,
-                        validation_data=(test_x[:800], test_y[:800]),
-                        callbacks=[reduce_lr])
+    model.fit(train_x, train_y,
+              sample_weight=sample_weight,
+              batch_size=32,
+              epochs=400,
+              shuffle=True,
+              validation_data=(test_x[:800], test_y[:800]),
+              callbacks=[reduce_lr])
     result = model.evaluate(test_x, test_y)
     print(result)
     model.save('12306.image.model.h5', include_optimizer=False)
